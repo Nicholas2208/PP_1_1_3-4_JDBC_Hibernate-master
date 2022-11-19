@@ -11,10 +11,6 @@ public class UserDaoJDBCImpl implements UserDao {
     public UserDaoJDBCImpl() {
     }
 
-    public Connection getConnection() {
-        return Util.getDbConnection();
-    }
-
     public void createUsersTable() {
         String create_table = "CREATE TABLE IF NOT EXISTS usersdb.users (\n" +
                 "    id BIGINT NOT NULL AUTO_INCREMENT,\n" +
@@ -23,7 +19,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 "    age TINYINT,\n" +
                 "    PRIMARY KEY (id)\n" +
                 ");";
-        try (Connection connection = getConnection();
+        try (Connection connection = Util.getDbConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(create_table)) {
             preparedStatement.execute(create_table);
         } catch (SQLException e) {
@@ -33,9 +29,9 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         String dropUsers = "DROP TABLE IF EXISTS users;";
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(dropUsers)) {
-            preparedStatement.execute(dropUsers);
+        try (Connection connection = Util.getDbConnection();
+             PreparedStatement ps = connection.prepareStatement(dropUsers)) {
+            ps.execute(dropUsers);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -43,13 +39,13 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void saveUser(String name, String lastName, byte age) {
         String insertUser = "INSERT INTO users (name, lastName, age) values (?, ?, ?)";
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(insertUser)) {
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, lastName);
-            preparedStatement.setByte(3, age);
+        try (Connection connection = Util.getDbConnection();
+             PreparedStatement ps = connection.prepareStatement(insertUser)) {
+            ps.setString(1, name);
+            ps.setString(2, lastName);
+            ps.setByte(3, age);
 
-            preparedStatement.executeUpdate();
+            ps.executeUpdate();
             System.out.printf("\nUser с именем %s добавлен в базу данных", name);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -58,10 +54,10 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void removeUserById(long id) {
         String removeUser = "DELETE FROM users WHERE id = ?";
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(removeUser)) {
-            preparedStatement.setLong(1, id);
-            preparedStatement.executeUpdate();
+        try (Connection connection = Util.getDbConnection();
+             PreparedStatement ps = connection.prepareStatement(removeUser)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -70,9 +66,9 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         List<User> allUsers = new ArrayList<>();
         String selectAll = "SELECT * FROM users";
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectAll)) {
-            ResultSet rs = preparedStatement.executeQuery();
+        try (Connection connection = Util.getDbConnection();
+             PreparedStatement ps = connection.prepareStatement(selectAll)) {
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String name = rs.getString("name");
                 String lastName = rs.getString("lastName");
@@ -89,9 +85,9 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         String truncateUsers = "TRUNCATE users;";
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(truncateUsers)) {
-            preparedStatement.execute(truncateUsers);
+        try (Connection connection = Util.getDbConnection();
+             PreparedStatement ps = connection.prepareStatement(truncateUsers)) {
+            ps.execute(truncateUsers);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
